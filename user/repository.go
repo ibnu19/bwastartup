@@ -11,7 +11,7 @@ type repository struct {
 	db *gorm.DB
 }
 
-// Function to populate the repository struct
+// Function to populate a repository struct
 func UserRepository(db *gorm.DB) *repository {
 	return &repository{db}
 }
@@ -30,7 +30,7 @@ func (r *repository) Save(user User) (User, error) {
 func (r *repository) FindByEmail(email string) (User, error) {
 	var user User
 
-	if err := r.db.Where("email = ?", email).First(&user).Error; err != nil {
+	if err := r.db.Where("email = ?", email).Find(&user).Error; err != nil {
 		return user, err
 	}
 
