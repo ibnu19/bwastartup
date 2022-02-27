@@ -2,9 +2,9 @@ package campaign
 
 import "time"
 
-type campaign struct {
+type Campaign struct {
 	ID              int
-	UserId          int
+	UserID          int
 	Name            string
 	SortDescription string
 	Description     string
@@ -15,4 +15,14 @@ type campaign struct {
 	Slug            string
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
+	CampaignImages  []CampaignImage
+}
+
+type CampaignImage struct {
+	ID         int
+	CampaignID int
+	FileName   string
+	IsPrimary  int
+	CreatedAt  time.Time
+	UpdatedAt  time.Time
 }
