@@ -14,12 +14,15 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 func main() {
 
 	dsn := "root:admin@tcp(localhost:3306)/bwastartup?charset=utf8mb4&parseTime=True&loc=Local"
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Info),
+	})
 
 	if err != nil {
 		log.Fatal(err.Error())
@@ -36,14 +39,19 @@ func main() {
 
 	// Handler
 	userHandler := handler.Userhandler(userService, authService)
+	campaignHandler := handler.CampaignHandler(campaignService)
 
 	router := gin.Default()
 	api := router.Group("/api/v1")
 
+	// User routes
 	api.POST("/users", userHandler.RegisterUser)
 	api.POST("/login", userHandler.Login)
 	api.POST("/email-checker", userHandler.CheckEmailAvaibility)
 	api.POST("/avatars", authMiddleware(authService, userService), userHandler.UploadAvatars)
+
+	// Campaigns routes
+	api.GET("/campaigns", campaignHandler.GetCampaigns)
 
 	router.Run()
 }
