@@ -49,8 +49,8 @@ func (h *userHandler) RegisterUser(c *gin.Context) {
 	}
 
 	formatUser := user.FormatUser(newUser, token)
-	response := helper.APIResponse("Account has been registered", http.StatusOK, "Success", formatUser)
-	c.JSON(http.StatusOK, response)
+	response := helper.APIResponse("Account has been registered", http.StatusCreated, "Success", formatUser)
+	c.JSON(http.StatusCreated, response)
 }
 
 // Login user to application
