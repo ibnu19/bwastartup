@@ -1,0 +1,21 @@
+[GIN-debug] [WARNING] Creating an Engine instance with the Logger and Recovery middleware already attached.
+
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /images/*filepath         --> github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1 (3 handlers)
+[GIN-debug] HEAD   /images/*filepath         --> github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1 (3 handlers)
+[GIN-debug] POST   /api/v1/users             --> bwastartup/handler.(*userHandler).RegisterUser-fm (3 handlers)
+[GIN-debug] POST   /api/v1/login             --> bwastartup/handler.(*userHandler).Login-fm (3 handlers)
+[GIN-debug] POST   /api/v1/email-checker     --> bwastartup/handler.(*userHandler).CheckEmailAvaibility-fm (3 handlers)
+[GIN-debug] POST   /api/v1/avatars           --> bwastartup/handler.(*userHandler).UploadAvatars-fm (4 handlers)
+[GIN-debug] GET    /api/v1/campaigns         --> bwastartup/handler.(*campaignHandler).GetCampaigns-fm (3 handlers)
+[GIN-debug] [WARNING] You trusted all proxies, this is NOT safe. We recommend you to set a value.
+Please check https://pkg.go.dev/github.com/gin-gonic/gin#readme-don-t-trust-all-proxies for details.
+[GIN-debug] Environment variable PORT is undefined. Using port :8080 by default
+[GIN-debug] Listening and serving HTTP on :8080
+[GIN] 2022/03/03 - 13:26:10 | 200 |    7.314839ms |       127.0.0.1 | GET      "/images/1-avatar-user.png"
+[GIN] 2022/03/03 - 13:26:13 | 200 |   27.926177ms |       127.0.0.1 | GET      "/api/v1/campaigns?user_id=1"
+[GIN] 2022/03/03 - 13:26:29 | 200 |    1.677877ms |       127.0.0.1 | GET      "/api/v1/campaigns?user_id=10"
+[GIN] 2022/03/03 - 13:27:04 | 400 |    4.845977ms |       127.0.0.1 | POST     "/api/v1/login"

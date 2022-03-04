@@ -41,6 +41,11 @@ func main() {
 	userHandler := handler.Userhandler(userService, authService)
 	campaignHandler := handler.CampaignHandler(campaignService)
 
+	// Logger
+	// path := fmt.Sprintf("logger/%s", "logger.log")
+	// file, _ := os.Create(path)
+	// gin.DefaultWriter = io.MultiWriter(file)
+
 	router := gin.Default()
 	router.Static("/images", "./images")
 	api := router.Group("/api/v1")
@@ -53,6 +58,7 @@ func main() {
 
 	// Campaigns routes
 	api.GET("/campaigns", campaignHandler.GetCampaigns)
+	api.GET("/campaigns/:id", campaignHandler.GetCampaign)
 
 	router.Run()
 }
