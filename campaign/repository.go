@@ -10,6 +10,8 @@ type Repository interface {
 	FindById(id int) (Campaign, error)
 	Save(campaign Campaign) (Campaign, error)
 	Update(campaign Campaign) (Campaign, error)
+	CreateImage(campaignImage CampaignImage) (CampaignImage, error)
+	MarkAllImagesAsNonPrimary(campagnId int) (bool, error)
 }
 
 type repository struct {
@@ -22,7 +24,7 @@ func CampaignRepository(db *gorm.DB) *repository {
 
 func (r *repository) FindAll() ([]Campaign, error) {
 	var campaigns []Campaign
-	if err := r.db.Preload("CampaignImages", "is_primary =?", 1).Find(&campaigns).Error; err != nil {
+	if err := r.db.Preload("CampaignImages", "is_primary = ?", 1).Find(&campaigns).Error; err != nil {
 		return campaigns, err
 	}
 
@@ -41,7 +43,7 @@ func (r *repository) FindByUserId(userId int) ([]Campaign, error) {
 func (r *repository) FindById(id int) (Campaign, error) {
 	var campaign Campaign
 
-	if err := r.db.Preload("User").Preload("CampaignImages").Where("id = ?", id).Find(&campaign).Error; err != nil {
+	if err := r.db.Preload("CampaignImages").Preload("User").Where("id = ?", id).Find(&campaign).Error; err != nil {
 		return campaign, err
 	}
 
@@ -62,4 +64,20 @@ func (r *repository) Update(campaign Campaign) (Campaign, error) {
 	}
 
 	return campaign, nil
+}
+
+func (r *repository) CreateImage(campaignImage CampaignImage) (CampaignImage, error) {
+	if err := r.db.Create(&campaignImage).Error; err != nil {
+		return campaignImage, err
+	}
+
+	return campaignImage, nil
+}
+
+func (r *repository) MarkAllImagesAsNonPrimary(campagnId int) (bool, error) {
+	if err := r.db.Model(&CampaignImage{}).Where("campaign_id = ?", campagnId).Update("is_primary", false).Error; err != nil {
+		return false, err
+	}
+
+	return true, nil
 }
