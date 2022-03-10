@@ -8,6 +8,7 @@ import (
 
 type Service interface {
 	GetTransactionsByCampaignId(campaignId int, user user.User) ([]Transaction, error)
+	GetTransactionByUserId(userId int) ([]Transaction, error)
 }
 
 type service struct {
@@ -31,9 +32,19 @@ func (s *service) GetTransactionsByCampaignId(campaignId int, user user.User) ([
 		return []Transaction{}, errors.New("you are not owner the campaign")
 	}
 
-	transactions, err := s.repository.GetCampaignId(campaignId)
+	transactions, err := s.repository.GetByCampaignId(campaignId)
 	if err != nil {
 		return transactions, err
+	}
+
+	return transactions, nil
+}
+
+func (s *service) GetTransactionByUserId(userId int) ([]Transaction, error) {
+
+	transactions, err := s.repository.GetByUserId(userId)
+	if err != nil {
+		return []Transaction{}, err
 	}
 
 	return transactions, nil

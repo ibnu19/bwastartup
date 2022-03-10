@@ -18,6 +18,7 @@ func TransactionHandler(service transaction.Service) *transactionHandler {
 	return &transactionHandler{service}
 }
 
+// Get list of transaction by campaign
 func (h *transactionHandler) GetCampaignTransaction(c *gin.Context) {
 	campaignId, _ := strconv.Atoi(c.Param("id"))
 
@@ -32,5 +33,23 @@ func (h *transactionHandler) GetCampaignTransaction(c *gin.Context) {
 	}
 
 	response := helper.APIResponse("List of campaign's transactions", http.StatusOK, "success", transaction.FormatCampaignTransactions(transactions))
+	c.JSON(http.StatusOK, response)
+}
+
+// Get list of transaction by user
+func (h *transactionHandler) GetUserTransactions(c *gin.Context) {
+
+	// Get logged in user
+	user := c.MustGet("currentUser").(user.User)
+
+	// Get transactions of current logged in user
+	transactions, err := h.service.GetTransactionByUserId(user.ID)
+	if err != nil {
+		response := helper.APIResponse("Failed to get user's transactions", http.StatusBadRequest, "error", transactions)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	response := helper.APIResponse("List of user's transactions", http.StatusOK, "success", transaction.FormatUserTransactions(transactions))
 	c.JSON(http.StatusOK, response)
 }
