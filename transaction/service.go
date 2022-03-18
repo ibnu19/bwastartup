@@ -2,6 +2,7 @@ package transaction
 
 import (
 	"bwastartup/campaign"
+	"bwastartup/payment"
 	"bwastartup/user"
 	"errors"
 )
@@ -9,15 +10,17 @@ import (
 type Service interface {
 	GetTransactionsByCampaignId(campaignId int, user user.User) ([]Transaction, error)
 	GetTransactionByUserId(userId int) ([]Transaction, error)
+	CreateTransaction(input CreateTransactionInput) (Transaction, error)
 }
 
 type service struct {
 	repository         Repository
 	campaignRepository campaign.Repository
+	paymentService     payment.Service
 }
 
-func TransactionService(repository Repository, campaignRepository campaign.Repository) *service {
-	return &service{repository, campaignRepository}
+func TransactionService(repository Repository, campaignRepository campaign.Repository, paymentService payment.Service) *service {
+	return &service{repository, campaignRepository, paymentService}
 }
 
 func (s *service) GetTransactionsByCampaignId(campaignId int, user user.User) ([]Transaction, error) {
@@ -48,4 +51,36 @@ func (s *service) GetTransactionByUserId(userId int) ([]Transaction, error) {
 	}
 
 	return transactions, nil
+}
+
+func (s *service) CreateTransaction(input CreateTransactionInput) (Transaction, error) {
+	transaction := Transaction{}
+	transaction.CampaignID = input.CampaignId
+	transaction.Amount = input.Amount
+	transaction.Status = "pending"
+	transaction.UserID = input.User.ID
+
+	// Create new tansaction
+	newTransaction, err := s.repository.Save(transaction)
+	if err != nil {
+		return newTransaction, err
+	}
+
+	// Mapping transaction entity to payment transaction entity
+	paymentTransaction := payment.Transaction{
+		Id:     newTransaction.Id,
+		Amount: newTransaction.Amount,
+	}
+
+	// Get Payment redirect URL from midtrans
+	paymentURL, err := s.paymentService.GetPaymentURL(paymentTransaction, input.User)
+	if err != nil {
+		return newTransaction, err
+	}
+
+	// Add payment URL on transaction object
+	newTransaction.PaymentURL = paymentURL
+
+	// Update transaction
+	return s.repository.Update(newTransaction)
 }
