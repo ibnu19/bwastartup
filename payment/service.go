@@ -4,7 +4,7 @@ import (
 	"bwastartup/user"
 	"strconv"
 
-	midtrans "github.com/veritrans/go-midtrans"
+	"github.com/veritrans/go-midtrans"
 )
 
 type Service interface {
@@ -17,11 +17,11 @@ func PaymentTransactionService() *service {
 	return &service{}
 }
 
-// Get midtrans payment URL
-func (s *service) GetPaymentURL(transaction Transaction, user user.User) (string, error) {
+//Get midtrans payment URL
+func (sr *service) GetPaymentURL(transaction Transaction, user user.User) (string, error) {
 	midclient := midtrans.NewClient()
-	midclient.ServerKey = ""
-	midclient.ClientKey = ""
+	midclient.ServerKey = "SB-Mid-server-mIcOITwD2ycE9L62vXKZdPeJ"
+	midclient.ClientKey = "SB-Mid-client-lJ1r7F_e1B0MRapk"
 	midclient.APIEnvType = midtrans.Sandbox
 
 	snapGateway := midtrans.SnapGateway{
@@ -46,4 +46,5 @@ func (s *service) GetPaymentURL(transaction Transaction, user user.User) (string
 
 	// create midtrands payment redirect URL
 	return snapTokenResp.RedirectURL, nil
+
 }

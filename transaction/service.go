@@ -5,12 +5,15 @@ import (
 	"bwastartup/payment"
 	"bwastartup/user"
 	"errors"
+	"fmt"
+	"strconv"
 )
 
 type Service interface {
 	GetTransactionsByCampaignId(campaignId int, user user.User) ([]Transaction, error)
 	GetTransactionByUserId(userId int) ([]Transaction, error)
 	CreateTransaction(input CreateTransactionInput) (Transaction, error)
+	ProcessPayment(input TransactionNotificationInput) error
 }
 
 type service struct {
@@ -53,6 +56,7 @@ func (s *service) GetTransactionByUserId(userId int) ([]Transaction, error) {
 	return transactions, nil
 }
 
+// Create new transaction for backer
 func (s *service) CreateTransaction(input CreateTransactionInput) (Transaction, error) {
 	transaction := Transaction{}
 	transaction.CampaignID = input.CampaignId
@@ -75,6 +79,9 @@ func (s *service) CreateTransaction(input CreateTransactionInput) (Transaction, 
 	// Get Payment redirect URL from midtrans
 	paymentURL, err := s.paymentService.GetPaymentURL(paymentTransaction, input.User)
 	if err != nil {
+		fmt.Println("----------------------")
+		fmt.Println(err)
+		fmt.Println("----------------------")
 		return newTransaction, err
 	}
 
@@ -83,4 +90,44 @@ func (s *service) CreateTransaction(input CreateTransactionInput) (Transaction, 
 
 	// Update transaction
 	return s.repository.Update(newTransaction)
+}
+
+// Notification after process payment from user
+func (s *service) ProcessPayment(input TransactionNotificationInput) error {
+	transactionId, _ := strconv.Atoi(input.OrderID)
+
+	transaction, err := s.repository.GetById(transactionId)
+	if err != nil {
+		return err
+	}
+
+	if input.PaymentType == "credit_card" && input.TransactionStatus == "capture" && input.FraudStatus == "accept" {
+		transaction.Status = "paid"
+	} else if input.TransactionStatus == "settlement" {
+		transaction.Status = "paid"
+	} else if input.TransactionStatus == "deny" || input.TransactionStatus == "expire" || input.TransactionStatus == "cancel" {
+		transaction.Status = "canceled"
+	}
+
+	updatedTransaction, err := s.repository.Update(transaction)
+	if err != nil {
+		return err
+	}
+
+	campaign, err := s.campaignRepository.FindById(updatedTransaction.CampaignID)
+	if err != nil {
+		return err
+	}
+
+	if updatedTransaction.Status == "paid" {
+		campaign.BackerCount = campaign.BackerCount + 1
+		campaign.CurrentAmount = campaign.CurrentAmount + updatedTransaction.Amount
+
+		_, err := s.campaignRepository.Update(campaign)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

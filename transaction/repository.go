@@ -1,10 +1,13 @@
 package transaction
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+)
 
 type Repository interface {
 	GetByCampaignId(campaignId int) ([]Transaction, error)
 	GetByUserId(userId int) ([]Transaction, error)
+	GetById(Id int) (Transaction, error)
 	Save(transaction Transaction) (Transaction, error)
 	Update(transaction Transaction) (Transaction, error)
 }
@@ -37,7 +40,7 @@ func (r *repository) GetByUserId(userId int) ([]Transaction, error) {
 	var transactions []Transaction
 
 	if err := r.db.Preload("Campaign.CampaignImages", "campaign_images.is_primary = ?", 1).
-		Where("user_id =?", userId).
+		Where("user_id = ?", userId).
 		Order(("created_at desc")).
 		Find(&transactions).Error; err != nil {
 
@@ -45,6 +48,17 @@ func (r *repository) GetByUserId(userId int) ([]Transaction, error) {
 	}
 
 	return transactions, nil
+}
+
+// Get transaction by id
+func (r *repository) GetById(Id int) (Transaction, error) {
+	var transaction Transaction
+
+	if err := r.db.Where("id = ?", Id).Find(&transaction).Error; err != nil {
+		return transaction, err
+	}
+
+	return transaction, nil
 }
 
 // Create new transaction to database
