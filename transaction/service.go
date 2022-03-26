@@ -5,7 +5,6 @@ import (
 	"bwastartup/payment"
 	"bwastartup/user"
 	"errors"
-	"fmt"
 	"strconv"
 )
 
@@ -79,9 +78,6 @@ func (s *service) CreateTransaction(input CreateTransactionInput) (Transaction, 
 	// Get Payment redirect URL from midtrans
 	paymentURL, err := s.paymentService.GetPaymentURL(paymentTransaction, input.User)
 	if err != nil {
-		fmt.Println("----------------------")
-		fmt.Println(err)
-		fmt.Println("----------------------")
 		return newTransaction, err
 	}
 

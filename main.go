@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
 	"gorm.io/driver/mysql"
@@ -53,6 +54,10 @@ func main() {
 	// gin.DefaultWriter = io.MultiWriter(file)
 
 	router := gin.Default()
+	// router.Use(cors.Default())
+	config := cors.DefaultConfig()
+	config.AllowOrigins = []string{"*"}
+	router.Use(cors.New(config))
 	router.Static("/images", "./images")
 	api := router.Group("/api/v1")
 
@@ -61,6 +66,7 @@ func main() {
 	api.POST("/login", userHandler.Login)
 	api.POST("/email-checker", userHandler.CheckEmailAvaibility)
 	api.POST("/avatars", authMiddleware(authService, userService), userHandler.UploadAvatars)
+	api.GET("/users/fetch", authMiddleware(authService, userService), userHandler.FetchUser)
 
 	// Campaigns routes
 	api.GET("/campaigns", campaignHandler.GetCampaigns)
